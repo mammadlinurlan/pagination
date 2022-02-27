@@ -9,6 +9,8 @@ export const Index = ({ headers }) => {
     const [totalPage, setTotalPage] = React.useState(0)
     const [itemsPerPage, setItemsPerPage] = React.useState(10)
     const [search, setSearch] = React.useState(null)
+    const [sortField, setSortField] = React.useState()
+    const [sortOrder, setSortOrder] = React.useState('asc')
 
 
 
@@ -21,7 +23,7 @@ export const Index = ({ headers }) => {
     }, [])
 
     useEffect(() => {
-        const userLength = search !== null ? users.filter((u)=> u.name.first.trim().toLowerCase().includes(search.trim().toLowerCase())).length : users.length
+        const userLength = search !== null ? users.filter((u) => u.name.first.trim().toLowerCase().includes(search.trim().toLowerCase())).length : users.length
 
         let tp = Math.ceil(userLength / itemsPerPage)
         setTotalPage(tp)
@@ -46,7 +48,7 @@ export const Index = ({ headers }) => {
         searchValue = e.target.value
         console.log(searchValue)
     }
-    
+
 
     const searchSubmitHandler = (e) => {
         e.preventDefault();
@@ -54,24 +56,56 @@ export const Index = ({ headers }) => {
         setCurrentPage(1)
     }
 
+
+    const sortHandler = (head) => {
+        if (head.sortable) {
+            setSortField(head.id)
+            setSortOrder(
+                sortOrder === 'asc' ? 'desc' : 'asc'
+            )
+        setCurrentPage(1)
+
+        }
+
+    }
+
+    // console.log(sortField);
+
     const computedUsers = useMemo(() => {
         let computed = users
 
-        if(search){
-            computed = computed.filter((u)=> u.name.first.trim().toLowerCase().includes(search.trim().toLowerCase()))
+        if (search) {
+            computed = computed.filter((u) => u.name.first.trim().toLowerCase().includes(search.trim().toLowerCase()))
+        }
+
+        if (sortField) {
+            computed = computed.sort((a, b) => {
+                const isReversed = sortOrder === 'asc' ? 1 : -1
+                const compareResult = a.name['first'].localeCompare(b.name['first'])
+                // console.log(compareResult);
+                // console.log(a.name.first);
+                // console.log(b.name.first);
+
+                return compareResult * isReversed
+            })
         }
 
         computed = computed.slice(
             (currentPage - 1) * itemsPerPage,
             (currentPage - 1) * itemsPerPage + itemsPerPage
         )
+
+
         return computed
     },
         [
             users,
             itemsPerPage,
             currentPage,
-            search
+            search,
+            sortField,
+            sortOrder
+
         ]
     )
 
@@ -82,13 +116,13 @@ export const Index = ({ headers }) => {
 
         <div className="container">
             <form onSubmit={searchSubmitHandler}>
-            <input
-                className="form-group"
-                onChange={searchHandler}
-            />
-            <button className="btn btn-primary" type="submit" >SEARCH</button>
+                <input
+                    className="form-group"
+                    onChange={searchHandler}
+                />
+                <button className="btn btn-primary" type="submit" >SEARCH</button>
             </form>
-           
+
             <select onChange={perPageHangler} value={itemsPerPage} className="form-select" aria-label="Default select example">
                 <option value="10">10</option>
                 <option value="25">25</option>
@@ -99,9 +133,14 @@ export const Index = ({ headers }) => {
                     <tr>
                         {headers.map((head) => {
                             return <th
+                                className={`${head.sortable && "bg bg-success"}`}
+                                onClick={() => sortHandler(head)}
                                 key={head.id}
                                 scope="col">
                                 {head.label}
+                                {head.sortable && (sortOrder === 'asc' ? '↓' : '↑')}
+
+
                             </th>
                         })}
                     </tr>
@@ -113,6 +152,7 @@ export const Index = ({ headers }) => {
                             key={u.login.uuid}
                             u={u}
                             idx={idx + (currentPage - 1) * itemsPerPage}
+
                         />
                     })}
                 </tbody>

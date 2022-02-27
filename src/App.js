@@ -7,10 +7,11 @@ import {Index} from './components/user/Index'
 function App() {
 
   const headers = [
-    { id: 'idx', label: '#' },
-    { id: "picture", label: "Picture" },
-    { id: "fullname", label: "Full name" },
-    { id: "email", label: "Email" }
+    { id: 'idx', label: '#' , sortable:false},
+    { id: "picture", label: "Picture" , sortable:false},
+    { id: "Full Name", label: "Full name" , sortable:true},
+    { id: "email", label: "Email" , sortable:false},
+    
 ]
 
 
